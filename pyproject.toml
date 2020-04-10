@@ -2,7 +2,7 @@
 name = "nngraphons"
 version = "0.1.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["Huy Hoang Vu <you@example.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
@@ -11,6 +11,7 @@ torch = "^1.4"
 scipy = "*"
 matplotlib = "*"
 pandas = "*"
+networkx = "*"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.7.9"
