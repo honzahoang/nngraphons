@@ -1,9 +1,7 @@
 from itertools import product
 import random
-import math
 import numpy as np
 import networkx as nx
-import matplotlib.pyplot as plt
 
 
 def graphon_grow_unit_attach(x, y):
@@ -29,8 +27,8 @@ def graphon_complete_bipartite(x, y):
     ).astype(float)
 
 
-def graphon_big_qlique(x, y):
-    """Complete bipartite graphon"""
+def graphon_big_clique(x, y):
+    """Big clique graphon"""
     return ((x <= 0.5) & (y <= 0.5)).astype(float)
 
 
@@ -56,70 +54,10 @@ def sample_graphon(W, size=None, max_size=None):
     return V, E
 
 
-def visualize_graphon(W, resolution=300, ax=plt):
-    """Plots the graphon W as a greyscale image. The darker the closer to 1."""
-    uniform_args = np.linspace(start=0, stop=1, num=resolution)
-    cartesian_product = np.transpose(
-        [np.tile(uniform_args, len(uniform_args)),
-         np.repeat(uniform_args, len(uniform_args))]
-    )
-    img_mat = (
-        W(cartesian_product[:, 0], cartesian_product[:, 1])
-        .reshape(resolution, resolution)
-    )
-    plt.gray()
-    ax.imshow(
-        X=img_mat,
-        origin='lower',
-        extent=[0, 1, 0, 1],
-        cmap='plasma',
-        vmin=0,
-        vmax=1
-    )
-    ax.colorbar()
-
-
-def t_discrete(g, G, epsilon=0.01, gamma=0.95):
-    """Homomorphism density for finite graphs estimation with naive Monte-Carlo"""
-    # Unpack graph structs
-    V_g, E_g = g
-    V_G, E_G = G
-
-    # Create adjacency matrix
-    A_G = np.zeros((len(V_G), len(V_G)), dtype=int)
-    A_G[E_G[:,0], E_G[:,1]] = 1
-    A_G[E_G[:,1], E_G[:,0]] = 1
-
-    # Sample size
-    N = math.ceil((math.log(2) - math.log(1 - gamma)) / (2*epsilon**2))
-
-    # Sample vertex mappings V_g -> V_G
-    mappings = np.random.randint(low=0, high=len(V_G)-1, size=(N, len(V_g)))
-
-    # Create mapped vertex edges to later check in adjacency matrix
-    mapped_edges = np.empty(shape=(len(E_g)*N, 2), dtype=np.uint16)
-    for i in range(N):
-        mapped_edges[i*len(E_g):(i+1)*len(E_g)] = mappings[i][E_g]
-
-    # Get adjacency for each edge of the random mappings
-    adjacency_indicators = A_G[mapped_edges[:,0], mapped_edges[:,1]]
-
-    # Multiply adjacencies to check if the mappings represent homomorphisms then average
-    hom_density = (
-        adjacency_indicators
-        .reshape(len(E_g), N)
-        .prod(axis=0)
-        .sum()
-        / N
-    )
-
-    return hom_density
-
-
 def complete_graph(n):
     V = np.arange(n)
     E = np.transpose(np.vstack(np.tril_indices(n)))
-    E = E[E[:,0] != E[:,1]]
+    E = E[E[:, 0] != E[:, 1]]
 
     return V, E
 
@@ -183,7 +121,7 @@ def create_all_graphs(n):
             # Discard if independent set
             if es.sum() == 0:
                 continue
-            G = (K[0].copy(), K[1][es ,:].copy())
+            G = (K[0].copy(), K[1][es, :].copy())
             nx_G = np_to_nx(G)
             # Check if new graph is isomorphic with any of the existing ones
             isomorphic = False
