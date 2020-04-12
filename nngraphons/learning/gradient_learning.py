@@ -1,4 +1,4 @@
-from typing import List, Tuple, Callable
+from typing import List, Tuple, Callable, Optional
 
 import torch
 import torch.nn as nn
@@ -14,7 +14,8 @@ def gradient_descent(
     n: int,
     t_g: List[float],
     L: Callable[[List[float], List[torch.Tensor]], float],
-    stopping_criterion: Callable[[float], bool]
+    stopping_criterion: Callable[[float], bool],
+    optimizer: Optional[torch.optim.Optimizer] = None
 ) -> None:
     """
     Iteratively updates net's parameters in the gradient direction w.r.t L
@@ -34,9 +35,12 @@ def gradient_descent(
         Loss function accepting list of ground truth homomorphism densities and netowrk densities
     stopping_criterion : Callable[[float], bool]
         Training stopping criterion function accepting loss function value
+    optimizer : torch.optim.Optimizer, optional
+        Optimizer to use, Adam is used by default
     """
     # Create optimizer
-    optimizer = optim.Adam(net.parameters())
+    if optimizer is None:
+        optimizer = optim.Adam(net.parameters())
 
     # Training loop
     while True:
