@@ -2,6 +2,24 @@ import torch
 import torch.nn as nn
 
 
+class RBFNetworkSimple(nn.Module):
+    def __init__(self, n_centers, basis_func):
+        super(RBFNetworkSimple, self).__init__()
+        # RBF layer
+        self.rbf_layer = RBFLayer(
+            in_features=2,
+            out_features=n_centers,
+            basis_func=basis_func
+        )
+        # Output layer
+        self.output_layer = nn.Linear(self.hidden_size, 1)
+
+    def forward(self, x):
+        x = self.rbf_layer(x)
+        x = torch.sigmoid(self.output_layer(x))
+        return x
+
+
 # https://github.com/JeremyLinux/PyTorch-Radial-Basis-Function-Layer
 class RBFLayer(nn.Module):
     """
