@@ -12,7 +12,7 @@ class RBFNetworkSimple(nn.Module):
             basis_func=basis_func
         )
         # Output layer
-        self.output_layer = nn.Linear(self.hidden_size, 1)
+        self.output_layer = nn.Linear(n_centers, 1)
 
     def forward(self, x):
         x = self.rbf_layer(x)
