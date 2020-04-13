@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 
 
-class RBFNetworkSimple(nn.Module):
+class RBFMixture(nn.Module):
     def __init__(self, n_centers, basis_func):
-        super(RBFNetworkSimple, self).__init__()
+        super(RBFMixture, self).__init__()
         # RBF layer
         self.rbf_layer = RBFLayer(
             in_features=2,
@@ -12,11 +12,31 @@ class RBFNetworkSimple(nn.Module):
             basis_func=basis_func
         )
         # Output layer
-        self.output_layer = nn.Linear(n_centers, 1)
+        self.output_layer = nn.Linear(
+            in_features=n_centers,
+            out_features=1,
+            bias=False
+        )
+        # Initialize output layer weights
+        nn.init.uniform_(self.output_layer.weight, 0.1, 1)
 
     def forward(self, x):
+        # RBF scores (RBF part)
+        # Keep centers in unit square
+        self.rbf_layer.centres.clamp_(0, 1)
         x = self.rbf_layer(x)
-        x = torch.sigmoid(self.output_layer(x))
+
+        # Weighted average (linear part)
+        # Normalize output linear weights to have a normalized weighted average of RBF outputs
+        with torch.no_grad():
+            # Make weights non-negative
+            self.output_layer.weight.clamp_(0)
+            # Calculate normalization constant to make weights <= 1
+            norm = torch.sum(self.output_layer.weight)
+            # Check for zero division
+            if norm.item() != 0:
+                self.output_layer.weight.div_(norm)
+        x = self.output_layer(x)
         return x
 
 
@@ -54,8 +74,8 @@ class RBFLayer(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
-        nn.init.normal_(self.centres, 0, 1)
-        nn.init.constant_(self.sigmas, 1)
+        nn.init.uniform_(self.centres, 0, 1)
+        nn.init.uniform_(self.sigmas, 0.05, 1)
 
     def forward(self, input):
         size = (input.size(0), self.out_features, self.in_features)
