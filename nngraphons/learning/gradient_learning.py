@@ -55,10 +55,10 @@ def gradient_descent(
         loss = L(t_g, t_net)
 
         # Progress print
+        clear_output(wait=True)
         print(f'Current loss: {loss.item()}')
 
         # Visualize progress
-        clear_output(wait=True)
         visualize_pytorch_net_graphon(net)
 
         # Stopping criterion

@@ -27,14 +27,14 @@ class RBFMixture(nn.Module):
 
         # Weighted average (linear part)
         # Normalize output linear weights to have a normalized weighted average of RBF outputs
-        with torch.no_grad():
-            # Make weights non-negative
-            self.output_layer.weight.clamp_(0)
-            # Calculate normalization constant to make weights <= 1
-            norm = torch.sum(self.output_layer.weight)
-            # Check for zero division
-            if norm.item() != 0:
-                self.output_layer.weight.div_(norm)
+        # with torch.no_grad():
+        #     # Make weights non-negative
+        #     self.output_layer.weight.clamp_(0)
+        #     # Calculate normalization constant to make weights <= 1
+        #     norm = torch.sum(self.output_layer.weight)
+        #     # Check for zero division
+        #     if norm.item() != 0:
+        #         self.output_layer.weight.div_(norm)
         x = self.output_layer(x)
         return x
 
@@ -74,7 +74,7 @@ class RBFLayer(nn.Module):
 
     def reset_parameters(self):
         nn.init.uniform_(self.centres, 0, 1)
-        nn.init.uniform_(self.sigmas, 0.05, 1)
+        nn.init.uniform_(self.sigmas, 0.5, 3)
 
     def forward(self, input):
         size = (input.size(0), self.out_features, self.in_features)
