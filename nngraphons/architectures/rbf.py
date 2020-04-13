@@ -23,7 +23,7 @@ class RBFMixture(nn.Module):
     def forward(self, x):
         # RBF scores (RBF part)
         # Keep centers in unit square
-        x = torch.mean(self.rbf_layer(x))
+        x = torch.mean(self.rbf_layer(x), dim=-1)
 
         # # Weighted average (linear part)
         # # Normalize output linear weights to have a normalized weighted average of RBF outputs
