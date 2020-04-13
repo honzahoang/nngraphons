@@ -1,3 +1,4 @@
+import os
 from typing import List, Tuple
 
 import math
@@ -83,8 +84,12 @@ def t_nn(
 
     # Sort floats in each edge in ascending order to use upper triangle of graphon
     mapped_edges.sort()
-    global COMPUTATON_DEVICE
-    mapped_edges = torch.from_numpy(mapped_edges).float().to(COMPUTATON_DEVICE)
+    mapped_edges = (
+        torch
+        .from_numpy(mapped_edges)
+        .float()
+        .to(os.environ['COMPUTATION_DEVICE'])
+    )
 
     # Sample the network for different edge probabilites for the small graph g
     net_output = net(mapped_edges)

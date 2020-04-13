@@ -1,3 +1,4 @@
+import os
 from typing import Callable
 
 import torch
@@ -40,14 +41,13 @@ def visualize_pytorch_net_graphon(net: nn.Module, resolution: int = 300) -> None
          np.repeat(uniform_args, len(uniform_args))]
     )
     cartesian_product.sort()
-    global COMPUTATION_DEVICE
     with torch.no_grad():
         img_mat = (
             net(
                 torch
                 .from_numpy(cartesian_product)
                 .float()
-                .to(COMPUTATION_DEVICE)
+                .to(os.environ['COMPUTATION_DEVICE'])
             )
             .numpy()
             .reshape(resolution, resolution)
