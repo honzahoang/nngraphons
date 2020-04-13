@@ -3,6 +3,7 @@ from typing import List, Tuple, Callable, Optional
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from IPython.display import clear_output
 
 from nngraphons.visualization.graphon_visualization import visualize_pytorch_net_graphon
 from nngraphons.learning.homomorphism_density import t_nn
@@ -57,6 +58,7 @@ def gradient_descent(
         print(f'Current loss: {loss.item()}')
 
         # Visualize progress
+        clear_output(wait=True)
         visualize_pytorch_net_graphon(net)
 
         # Stopping criterion
