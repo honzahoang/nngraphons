@@ -74,7 +74,7 @@ class RBFLayer(nn.Module):
 
     def reset_parameters(self):
         nn.init.uniform_(self.centres, 0, 1)
-        nn.init.uniform_(self.sigmas, 0.5, 3)
+        nn.init.uniform_(self.sigmas, 2, 5)
 
     def forward(self, input):
         size = (input.size(0), self.out_features, self.in_features)
