@@ -23,7 +23,6 @@ class RBFMixture(nn.Module):
     def forward(self, x):
         # RBF scores (RBF part)
         # Keep centers in unit square
-        self.rbf_layer.centres.clamp_(0, 1)
         x = self.rbf_layer(x)
 
         # Weighted average (linear part)
