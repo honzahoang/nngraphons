@@ -11,22 +11,22 @@ class RBFMixture(nn.Module):
             out_features=n_centers,
             basis_func=basis_func
         )
-        # Output layer
-        self.output_layer = nn.Linear(
-            in_features=n_centers,
-            out_features=1,
-            bias=False
-        )
-        # Initialize output layer weights
-        nn.init.uniform_(self.output_layer.weight, 0.1, 1)
+        # # Output layer
+        # self.output_layer = nn.Linear(
+        #     in_features=n_centers,
+        #     out_features=1,
+        #     bias=False
+        # )
+        # # Initialize output layer weights
+        # nn.init.uniform_(self.output_layer.weight, 0.1, 1)
 
     def forward(self, x):
         # RBF scores (RBF part)
         # Keep centers in unit square
-        x = self.rbf_layer(x)
+        x = torch.mean(self.rbf_layer(x))
 
-        # Weighted average (linear part)
-        # Normalize output linear weights to have a normalized weighted average of RBF outputs
+        # # Weighted average (linear part)
+        # # Normalize output linear weights to have a normalized weighted average of RBF outputs
         # with torch.no_grad():
         #     # Make weights non-negative
         #     self.output_layer.weight.clamp_(0)
@@ -35,7 +35,7 @@ class RBFMixture(nn.Module):
         #     # Check for zero division
         #     if norm.item() != 0:
         #         self.output_layer.weight.div_(norm)
-        x = self.output_layer(x)
+        # x = self.output_layer(x)
         return x
 
 
