@@ -49,6 +49,7 @@ def visualize_pytorch_net_graphon(net: nn.Module, resolution: int = 300) -> None
                 .float()
                 .to(os.environ['COMPUTATION_DEVICE'])
             )
+            .cpu()
             .numpy()
             .reshape(resolution, resolution)
         )
