@@ -16,7 +16,8 @@ def gradient_descent(
     t_g: List[float],
     L: Callable[[List[float], List[torch.Tensor]], float],
     stopping_criterion: Callable[[float], bool],
-    optimizer: Optional[torch.optim.Optimizer] = None
+    optimizer: Optional[torch.optim.Optimizer] = None,
+    device: str = 'cpu'
 ) -> None:
     """
     Iteratively updates net's parameters in the gradient direction w.r.t L
@@ -38,6 +39,8 @@ def gradient_descent(
         Training stopping criterion function accepting loss function value
     optimizer : torch.optim.Optimizer, optional
         Optimizer to use, Adam is used by default
+    device : str
+        Device on which to compute
     """
     # Create optimizer
     if optimizer is None:

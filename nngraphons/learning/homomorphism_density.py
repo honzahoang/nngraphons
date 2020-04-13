@@ -47,7 +47,8 @@ def t_nn(
     g: List[Tuple],
     net: nn.Module,
     n: int,
-    track_computation: bool = True
+    track_computation: bool = True,
+    device: str = 'cpu'
 ) -> float:
     """
     Calculates the homomorphism density of finite graph g w.r.t the network net.
@@ -62,6 +63,8 @@ def t_nn(
         Number of samples to use for density approximation
     track_computation : bool, optional
         Whether to build computation graph for Pytorch's autograd, by default True
+    device : str
+        Device on which to calculate the densities, usually 'cpu' or, 'cuda:n'
 
     Returns
     -------
@@ -83,7 +86,7 @@ def t_nn(
 
     # Sort floats in each edge in ascending order to use upper triangle of graphon
     mapped_edges.sort()
-    mapped_edges = torch.from_numpy(mapped_edges).float()
+    mapped_edges = torch.from_numpy(mapped_edges).float().to(device)
 
     # Sample the network for different edge probabilites for the small graph g
     net_output = net(mapped_edges)
