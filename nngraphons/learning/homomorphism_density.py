@@ -34,8 +34,8 @@ def t_discrete(g, G, epsilon=0.01, gamma=0.95):
     # Multiply adjacencies to check if the mappings represent homomorphisms then average
     hom_density = (
         adjacency_indicators
-        .reshape(len(E_g), N)
-        .prod(axis=0)
+        .reshape(N, len(E_g))
+        .prod(axis=1)
         .sum()
         / N
     )
@@ -89,8 +89,8 @@ def t_nn(
     net_output = net(mapped_edges)
 
     # Calculate homomorphism density for the small graph g
-    reshaped_for_prod = net_output.view(len(E), n)
-    edge_probs_prods = torch.prod(reshaped_for_prod, dim=0)
+    reshaped_for_prod = net_output.view(n, len(E))
+    edge_probs_prods = torch.prod(reshaped_for_prod, dim=1)
     hom_density = torch.mean(edge_probs_prods)
 
     torch.set_grad_enabled(True)
