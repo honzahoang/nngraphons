@@ -1,5 +1,7 @@
+import random
 import torch
 import torch.nn as nn
+import numpy as np
 
 
 class RBFMixture(nn.Module):
@@ -11,32 +13,45 @@ class RBFMixture(nn.Module):
             out_features=n_centers,
             basis_func=basis_func
         )
-        # # Output layer
-        # self.output_layer = nn.Linear(
-        #     in_features=n_centers,
-        #     out_features=1,
-        #     bias=False
-        # )
-        # # Initialize output layer weights
-        # nn.init.uniform_(self.output_layer.weight, 0.1, 1)
+        # Output layer
+        self.output_layer = nn.Linear(
+            in_features=n_centers,
+            out_features=1,
+            bias=False
+        )
+        # Initialize output layer weights
+        nn.init.uniform_(self.output_layer.weight, 0.1, 1)
+        self.normalize_mixture_weights()
 
     def forward(self, x):
         # RBF scores (RBF part)
         # Keep centers in unit square
-        x = torch.mean(self.rbf_layer(x), dim=-1)
-
-        # # Weighted average (linear part)
-        # # Normalize output linear weights to have a normalized weighted average of RBF outputs
-        # with torch.no_grad():
-        #     # Make weights non-negative
-        #     self.output_layer.weight.clamp_(0)
-        #     # Calculate normalization constant to make weights <= 1
-        #     norm = torch.sum(self.output_layer.weight)
-        #     # Check for zero division
-        #     if norm.item() != 0:
-        #         self.output_layer.weight.div_(norm)
-        # x = self.output_layer(x)
+        x = self.rbf_layer(x)
+        # Weighted average (linear part)
+        x = self.output_layer(x)
         return x
+
+    def normalize_mixture_weights(self):
+        self.output_layer.weight.data /= self.output_layer.weight.data.sum()
+
+    def mutate(self, step=None, lr=1):
+        if step is None:
+            # Generate new random mutation
+            weight_steps = []
+            rbf_mutation = self.rbf_layer.mutate(step=step, lr=lr)
+            for rbf_step in rbf_mutation:
+                rbf_i = rbf_step[0]
+                weight_steps.append((rbf_i, 2*random.random()-1))
+        else:
+            weight_steps, rbf_mutation = step
+
+        # Apply mutation
+        for i, shift in weight_steps:
+            self.output_layer.weight.data[0, i] += shift
+
+        self.normalize_mixture_weights()
+
+        return (weight_steps, rbf_mutation)
 
 
 # https://github.com/JeremyLinux/PyTorch-Radial-Basis-Function-Layer
@@ -63,18 +78,19 @@ class RBFLayer(nn.Module):
             distances.
     """
 
-    def __init__(self, in_features, out_features, basis_func):
+    def __init__(self, in_features, out_features, basis_func, sigma_range=(5, 10)):
         super(RBFLayer, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
         self.centres = nn.Parameter(torch.Tensor(out_features, in_features))
         self.sigmas = nn.Parameter(torch.Tensor(out_features))
         self.basis_func = basis_func
+        self.sigma_range = sigma_range
         self.reset_parameters()
 
     def reset_parameters(self):
         nn.init.uniform_(self.centres, 0, 1)
-        nn.init.uniform_(self.sigmas, 2, 5)
+        nn.init.uniform_(self.sigmas, self.sigma_range[0], self.sigma_range[1])
 
     def forward(self, input):
         size = (input.size(0), self.out_features, self.in_features)
@@ -82,6 +98,29 @@ class RBFLayer(nn.Module):
         c = self.centres.unsqueeze(0).expand(size)
         distances = (x - c).pow(2).sum(-1).pow(0.5) * self.sigmas.unsqueeze(0)
         return self.basis_func(distances)
+
+    def mutate(self, step=None, lr=1):
+        if step is None:
+            # Generate new random mutaiton
+            step = []
+            rbfs_to_mutate = random.choices(
+                population=range(self.out_features),
+                k=random.randint(1, self.out_features+1)
+            )
+            for i in rbfs_to_mutate:
+                loc = torch.from_numpy(np.random.uniform(-1, 1, self.in_features))
+                scale = np.random.uniform(-1, 1)
+                step.append((i, loc, scale))
+
+        # Apply mutation
+        for i, loc, scale in step:
+            self.centres.data[i, :] += lr * loc
+            self.sigmas.data[i] += lr * scale
+
+        # Keep centers in unit square
+        self.centres.data = self.centres.data.clamp(0, 1)
+
+        return step
 
 
 # RBFs
@@ -141,6 +180,3 @@ def matern32(alpha):
 def matern52(alpha):
     phi = (torch.ones_like(alpha) + 5**0.5*alpha + (5/3) * alpha.pow(2))*torch.exp(-5**0.5*alpha)
     return phi
-
-
-# class RBFNet(nn.Module):
