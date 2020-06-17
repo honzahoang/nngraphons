@@ -1,0 +1,8 @@
+.python-version
+nngraphons.egg-info/dependency_links.txt
+nngraphons.egg-info/PKG-INFO
+nngraphons.egg-info/requires.txt
+nngraphons.egg-info/SOURCES.txt
+nngraphons.egg-info/top_level.txt
+.vscode/settings.json
+poetry.lock

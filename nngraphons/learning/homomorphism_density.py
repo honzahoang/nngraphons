@@ -74,6 +74,8 @@ def t_nn(
     # Unpack graph structure
     V, E = g
 
+    # Scale number of samples from graphon to not bias the gradients with high number of edges
+    n = int(math.ceil(n/len(E)))
     # Uniformly sample unit hyper-cube n times
     S_n = np.random.random_sample(size=(n, len(V)))
 
