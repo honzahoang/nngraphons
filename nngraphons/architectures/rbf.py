@@ -21,20 +21,16 @@ class RBFMixture(nn.Module):
         )
         # Initialize output layer weights
         nn.init.uniform_(self.output_layer.weight, 0.1, 1)
-        self.normalize_mixture_weights()
 
     def forward(self, x):
         # RBF scores (RBF part)
         # Keep centers in unit square
         x = self.rbf_layer(x)
-        # Weighted average (linear part)
+        # FC layer
         x = self.output_layer(x)
-        # Ensure [0,1] output
+        # Sigmoid activation to ensure probabilities
         x = torch.sigmoid(x)
         return x
-
-    def normalize_mixture_weights(self):
-        self.output_layer.weight.data /= self.output_layer.weight.data.sum()
 
     def mutate(self, step=None, lr=1):
         if step is None:
@@ -50,8 +46,6 @@ class RBFMixture(nn.Module):
         # Apply mutation
         for i, shift in weight_steps:
             self.output_layer.weight.data[0, i] += shift
-
-        self.normalize_mixture_weights()
 
         return (weight_steps, rbf_mutation)
 
