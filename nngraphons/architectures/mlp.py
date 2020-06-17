@@ -18,10 +18,10 @@ class MLP(nn.Module):
         self.output_layer = nn.Linear(self.hidden_size, 1)
 
         # Randomly initialize weights
-        nn.init.xavier_uniform_(self.input_layer.weight, gain=1)
+        nn.init.xavier_uniform_(self.input_layer.weight, gain=2)
         for h in self.hidden_layers:
-            nn.init.xavier_uniform_(h.weight, gain=1)
-        nn.init.xavier_uniform_(self.output_layer.weight, gain=1)
+            nn.init.xavier_uniform_(h.weight, gain=2)
+        nn.init.xavier_uniform_(self.output_layer.weight, gain=2)
 
     def forward(self, x):
         x = self.input_layer(x)
