@@ -29,6 +29,8 @@ class RBFMixture(nn.Module):
         x = self.rbf_layer(x)
         # Weighted average (linear part)
         x = self.output_layer(x)
+        # Ensure [0,1] output
+        x = torch.sigmoid(x)
         return x
 
     def normalize_mixture_weights(self):
