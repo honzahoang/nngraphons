@@ -98,6 +98,7 @@ def t_nn(
     mapped_edges = (
         torch
         .from_numpy(mapped_edges)
+        .float()
         .to(os.environ['COMPUTATION_DEVICE'])
     )
 
