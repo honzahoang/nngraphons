@@ -22,12 +22,22 @@ def t_discrete(g, G, epsilon=0.01, gamma=0.95):
     N = math.ceil((math.log(2) - math.log(1 - gamma)) / (2*epsilon**2))
 
     # Sample vertex mappings V_g -> V_G
-    mappings = np.random.randint(low=0, high=len(V_G)-1, size=(N, len(V_g)))
+    mappings = np.random.randint(low=0, high=len(V_G)-1, size=N*len(V_g))
 
     # Create mapped vertex edges to later check in adjacency matrix
-    mapped_edges = np.empty(shape=(len(E_g)*N, 2), dtype=np.uint16)
-    for i in range(N):
-        mapped_edges[i*len(E_g):(i+1)*len(E_g)] = mappings[i][E_g]
+    mapping_indices = (
+        np.tile(E_g.T, N).T
+        + len(V_g)
+        * np.tile(
+            np.repeat(
+                np.arange(N).reshape(-1, 1),
+                len(E_g),
+                axis=0
+            ),
+            2
+        )
+    )
+    mapped_edges = mappings[mapping_indices]
 
     # Get adjacency for each edge of the random mappings
     adjacency_indicators = A_G[mapped_edges[:, 0], mapped_edges[:, 1]]
