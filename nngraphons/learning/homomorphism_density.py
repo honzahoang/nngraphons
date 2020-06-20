@@ -77,19 +77,27 @@ def t_nn(
     # Scale number of samples from graphon to not bias the gradients with high number of edges
     n = int(math.ceil(n/len(E)))
     # Uniformly sample unit hyper-cube n times
-    S_n = np.random.random_sample(size=(n, len(V)))
+    S_n = np.random.uniform(size=n*len(V))
 
     # Map vertices to real numbers from <0,1> n times
-    mapped_edges = np.empty(shape=(len(E)*n, 2))
-    for j in range(n):
-        mapped_edges[j*len(E):(j+1)*len(E)] = S_n[j][E]
-
+    mapping_indices = (
+        np.tile(E.T, n).T
+        + len(V)
+        * np.tile(
+            np.repeat(
+                np.arange(n).reshape(-1, 1),
+                len(E),
+                axis=0
+            ),
+            2
+        )
+    )
+    mapped_edges = S_n[mapping_indices]
     # Sort floats in each edge in ascending order to use upper triangle of graphon
     mapped_edges.sort()
     mapped_edges = (
         torch
         .from_numpy(mapped_edges)
-        .float()
         .to(os.environ['COMPUTATION_DEVICE'])
     )
 

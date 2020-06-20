@@ -7,6 +7,8 @@ class MLP(nn.Module):
         super(MLP, self).__init__()
         self.num_hidden_layers = num_hidden_layers
         self.hidden_size = hidden_size
+
+        # Layer creation
         # Input layer
         self.input_layer = nn.Linear(2, self.hidden_size)
         # Hidden layers
@@ -22,6 +24,12 @@ class MLP(nn.Module):
         for h in self.hidden_layers:
             nn.init.xavier_uniform_(h.weight, gain=2)
         nn.init.xavier_uniform_(self.output_layer.weight, gain=2)
+
+    def to(self, device):
+        self.input_layer.to(device)
+        for layer in self.hidden_layers:
+            layer.to(device)
+        self.output_layer.to(device)
 
     def forward(self, x):
         x = self.input_layer(x)
