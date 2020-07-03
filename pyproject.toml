@@ -12,6 +12,7 @@ scipy = "*"
 matplotlib = "*"
 pandas = "*"
 networkx = "*"
+deap = "*"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.7.9"
