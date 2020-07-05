@@ -1,17 +1,20 @@
 import random
+import os
+
 import torch
 import torch.nn as nn
 import numpy as np
 
 
 class RBFMixture(nn.Module):
-    def __init__(self, n_centers, basis_func):
+    def __init__(self, n_centers, basis_func, sigma_range=(5, 10)):
         super(RBFMixture, self).__init__()
         # RBF layer
         self.rbf_layer = RBFLayer(
             in_features=2,
             out_features=n_centers,
-            basis_func=basis_func
+            basis_func=basis_func,
+            sigma_range=sigma_range
         )
         # Output layer
         self.output_layer = nn.Linear(
@@ -31,6 +34,12 @@ class RBFMixture(nn.Module):
         # Sigmoid activation to ensure probabilities
         x = torch.sigmoid(x)
         return x
+
+    def escape_pareto_stationary_point(self, spawn_prob=0.8):
+        if random.random() > spawn_prob:
+            self.rbf_layer.spawn_community()
+        else:
+            self.rbf_layer.despawn_community()
 
     def mutate(self, step=None, lr=1):
         if step is None:
@@ -74,7 +83,7 @@ class RBFLayer(nn.Module):
             distances.
     """
 
-    def __init__(self, in_features, out_features, basis_func, sigma_range=(5, 10)):
+    def __init__(self, in_features, out_features, basis_func, sigma_range):
         super(RBFLayer, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
@@ -82,9 +91,6 @@ class RBFLayer(nn.Module):
         self.sigmas = nn.Parameter(torch.Tensor(out_features))
         self.basis_func = basis_func
         self.sigma_range = sigma_range
-        self.reset_parameters()
-
-    def reset_parameters(self):
         nn.init.uniform_(self.centres, 0, 1)
         nn.init.uniform_(self.sigmas, self.sigma_range[0], self.sigma_range[1])
 
@@ -94,6 +100,37 @@ class RBFLayer(nn.Module):
         c = self.centres.unsqueeze(0).expand(size)
         distances = (x - c).pow(2).sum(-1).pow(0.5) * self.sigmas.unsqueeze(0)
         return self.basis_func(distances)
+
+    def spawn_community(self):
+        self.out_features += 1
+        new_center = torch.Tensor(1, self.in_features)
+        new_sigma = torch.Tensor(1)
+        nn.init.uniform_(new_center, 0, 1)
+        nn.init.uniform_(new_sigma, self.sigma_range[0], self.sigma_range[1])
+        new_centers = torch.cat(self.centres.data.clone(), new_center)
+        new_sigmas = torch.cat(self.sigmas.data.clone(), new_sigma)
+        self.centres = nn.Parameter(new_centers.to(os.environ['COMPUTATION_DEVICE']))
+        self.sigmas = nn.Parameter(new_sigmas.to(os.environ['COMPUTATION_DEVICE']))
+
+    def despawn_community(self):
+        self.out_features -= 1
+        random_community = random.randint(0, self.out_features)
+        selection_indices = [i for i in range(self.out_features) if i != random_community]
+        selection_indices = np.array(selection_indices)
+        self.centres = nn.Parameter(
+            self.centres
+            .data
+            .clone()
+            [selection_indices, :]
+            .to(os.environ['COMPUTATION_DEVICE'])
+        )
+        self.sigmas = nn.Parameter(
+            self.sigmas
+            .data
+            .clone()
+            [selection_indices]
+            .to(os.environ['COMPUTATION_DEVICE'])
+        )
 
     def mutate(self, step=None, lr=1):
         if step is None:
