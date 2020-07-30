@@ -22,8 +22,8 @@ def graphon_constant(x, y):
 def graphon_complete_bipartite(x, y):
     """Complete bipartite graphon"""
     return (
-        ((x <= 0.5) & (y <= 0.5))
-        | ((x > 0.5) & (y > 0.5))
+        ((x <= 0.5) & (y >= 0.5))
+        | ((x > 0.5) & (y < 0.5))
     ).astype(float)
 
 
