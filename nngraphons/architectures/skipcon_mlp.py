@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 
 
-class MLP(nn.Module):
+class SkipConMLP(nn.Module):
     def __init__(self, num_hidden_layers, hidden_size, init_gain=2):
-        super(MLP, self).__init__()
+        super(SkipConMLP, self).__init__()
         self.num_hidden_layers = num_hidden_layers
         self.hidden_size = hidden_size
 
