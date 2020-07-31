@@ -33,7 +33,11 @@ class MLP(nn.Module):
 
     def forward(self, x):
         x = self.input_layer(x)
+        prev_layers_outputs = [x]
         for h in self.hidden_layers:
             x = self.hidden_activation(h(x))
+            for o in prev_layers_outputs:
+                x = x + o
+            prev_layers_outputs.append(x)
         x = torch.sigmoid(self.output_layer(x))
         return x
