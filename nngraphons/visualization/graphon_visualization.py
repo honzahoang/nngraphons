@@ -1,5 +1,5 @@
 import os
-from typing import Callable
+from typing import Callable, Tuple
 
 import torch
 import torch.nn as nn
@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 def visualize_graphon(
     W: Callable[[np.ndarray, np.ndarray], np.ndarray],
     resolution: int = 300
-) -> None:
+) -> Tuple:
     """Plots the graphon W as a unit square function."""
     uniform_args = np.linspace(start=0, stop=1, num=resolution)
     cartesian_product = np.transpose(
@@ -21,8 +21,8 @@ def visualize_graphon(
         W(cartesian_product[:, 0], cartesian_product[:, 1])
         .reshape(resolution, resolution)
     )
-    plt.figure()
-    plt.imshow(
+    fig = plt.figure()
+    ax = plt.imshow(
         X=img_mat,
         origin='lower',
         extent=[0, 1, 0, 1],
@@ -32,8 +32,10 @@ def visualize_graphon(
     )
     plt.show()
 
+    return fig, ax
 
-def visualize_pytorch_net_graphon(net: nn.Module, resolution: int = 300) -> None:
+
+def visualize_pytorch_net_graphon(net: nn.Module, resolution: int = 300) -> Tuple:
     """Plots the neural network as a unit square function."""
     uniform_args = np.linspace(start=0, stop=1, num=resolution)
     cartesian_product = np.transpose(
@@ -56,8 +58,8 @@ def visualize_pytorch_net_graphon(net: nn.Module, resolution: int = 300) -> None
     # Make visualization symmetric
     tril = np.tril_indices(len(img_mat))
     img_mat[tril] = img_mat[tril[1], tril[0]]
-    plt.figure()
-    plt.imshow(
+    fig = plt.figure()
+    ax = plt.imshow(
         X=img_mat,
         origin='lower',
         extent=[0, 1, 0, 1],
@@ -67,3 +69,5 @@ def visualize_pytorch_net_graphon(net: nn.Module, resolution: int = 300) -> None
     )
     plt.colorbar()
     plt.show()
+
+    return fig, ax
