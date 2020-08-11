@@ -15,6 +15,7 @@ class MLP(nn.Module):
         self.hidden_layers = []
         for i in range(num_hidden_layers):
             self.hidden_layers.append(nn.Linear(self.hidden_size, self.hidden_size))
+        self.hidden_layers = nn.ModuleList(self.hidden_layers)
         self.hidden_activation = nn.LeakyReLU()
         # Output layer
         self.output_layer = nn.Linear(self.hidden_size, 1)
