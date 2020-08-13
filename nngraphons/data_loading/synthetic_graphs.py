@@ -65,12 +65,13 @@ def sample_net(net, size=None, max_size=None):
     # All possible edges
     edge_indices = np.transpose(np.vstack(np.tril_indices(len(V))))
     edges = V[edge_indices]
+    edges.sort()
     # Edge probabilites (graphon values)
     with torch.no_grad():
         edge_probs = (
             net(
                 torch
-                .from_numpy(edges.sort())
+                .from_numpy(edges)
                 .float()
                 .to(os.environ['COMPUTATION_DEVICE'])
             )
