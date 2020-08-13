@@ -76,9 +76,8 @@ def sample_net(net, size=None, max_size=None):
             )
             .cpu()
             .numpy()
-            .flatten()
+            .squeeze()
         )
-        print(edge_probs.shape)
 
     # Convert float values of vertices to integer indexes
     V = np.arange(len(V))
