@@ -70,7 +70,7 @@ def sample_net(net, size=None, max_size=None):
         edge_probs = (
             net(
                 torch
-                .from_numpy(edges)
+                .from_numpy(edges.sort())
                 .float()
                 .to(os.environ['COMPUTATION_DEVICE'])
             )
