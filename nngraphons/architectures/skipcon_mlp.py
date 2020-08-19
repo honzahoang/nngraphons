@@ -15,9 +15,11 @@ class SkipConMLP(nn.Module):
         self.hidden_layers = []
         for i in range(num_hidden_layers):
             self.hidden_layers.append(nn.Linear(self.hidden_size, self.hidden_size))
+        self.hidden_layers = nn.ModuleList(self.hidden_layers)
         self.hidden_activation = nn.LeakyReLU()
         # Output layer
         self.output_layer = nn.Linear(self.hidden_size, 1)
+        self.batch_norm = nn.BatchNorm1d(self.hidden_size)
 
         # Randomly initialize weights
         nn.init.xavier_uniform_(self.input_layer.weight, gain=init_gain)
@@ -29,15 +31,12 @@ class SkipConMLP(nn.Module):
         self.input_layer.to(device)
         for layer in self.hidden_layers:
             layer.to(device)
+        self.batch_norm.to(device)
         self.output_layer.to(device)
 
     def forward(self, x):
         x = self.input_layer(x)
-        prev_layers_outputs = [x]
         for h in self.hidden_layers:
-            x = self.hidden_activation(h(x))
-            for o in prev_layers_outputs:
-                x = x + o
-            prev_layers_outputs.append(x)
-        x = torch.sigmoid(self.output_layer(x))
+            x = self.hidden_activation(h(x)) + x
+        x = torch.sigmoid(self.output_layer(self.batch_norm(x)))
         return x

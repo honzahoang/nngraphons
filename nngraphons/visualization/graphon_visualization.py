@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def visualize_graphon(
+def visualize_synthetic_graphon(
     W: Callable[[np.ndarray, np.ndarray], np.ndarray],
     resolution: int = 300
 ) -> Tuple:
@@ -35,8 +35,8 @@ def visualize_graphon(
     return fig, ax
 
 
-def visualize_pytorch_net_graphon(net: nn.Module, resolution: int = 300) -> Tuple:
-    """Plots the neural network as a unit square function."""
+def visualize_neural_network_graphon(net: nn.Module, resolution: int = 300) -> Tuple:
+    """Plots the neural network net as a unit square function."""
     uniform_args = np.linspace(start=0, stop=1, num=resolution)
     cartesian_product = np.transpose(
         [np.tile(uniform_args, len(uniform_args)),

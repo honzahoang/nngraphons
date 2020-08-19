@@ -1,5 +1,5 @@
 import os
-from typing import List, Tuple
+from typing import Tuple
 
 import math
 import torch
@@ -7,10 +7,10 @@ import torch.nn as nn
 import numpy as np
 
 
-def t_discrete(g, G, epsilon=0.01, gamma=0.95):
+def t_discrete(F, G, epsilon=0.01, gamma=0.95):
     """Homomorphism density for finite graphs estimation with naive Monte-Carlo"""
     # Unpack graph structs
-    V_g, E_g = g
+    V_F, E_F = F
     V_G, E_G = G
 
     # Create adjacency matrix
@@ -22,16 +22,16 @@ def t_discrete(g, G, epsilon=0.01, gamma=0.95):
     N = math.ceil((math.log(2) - math.log(1 - gamma)) / (2*epsilon**2))
 
     # Sample vertex mappings V_g -> V_G
-    mappings = np.random.randint(low=0, high=len(V_G)-1, size=N*len(V_g))
+    mappings = np.random.randint(low=0, high=len(V_G)-1, size=N*len(V_F))
 
     # Create mapped vertex edges to later check in adjacency matrix
     mapping_indices = (
-        np.tile(E_g.T, N).T
-        + len(V_g)
+        np.tile(E_F.T, N).T
+        + len(V_F)
         * np.tile(
             np.repeat(
                 np.arange(N).reshape(-1, 1),
-                len(E_g),
+                len(E_F),
                 axis=0
             ),
             2
@@ -45,7 +45,7 @@ def t_discrete(g, G, epsilon=0.01, gamma=0.95):
     # Multiply adjacencies to check if the mappings represent homomorphisms then average
     hom_density = (
         adjacency_indicators
-        .reshape(N, len(E_g))
+        .reshape(N, len(E_F))
         .prod(axis=1)
         .sum()
         / N
@@ -55,17 +55,17 @@ def t_discrete(g, G, epsilon=0.01, gamma=0.95):
 
 
 def t_nn(
-    g: List[Tuple],
+    F: Tuple,
     net: nn.Module,
     n: int,
     track_computation: bool = True
-) -> float:
+) -> torch.Tensor:
     """
     Calculates the homomorphism density of finite graph g w.r.t the network net.
 
     Parameters
     ----------
-    g : Tuple
+    F : Tuple
         Finite graph for which to calculate homomorphism density w.r.t. the neural network net
     net : nn.Module
         Pytorch neural network
@@ -76,13 +76,13 @@ def t_nn(
 
     Returns
     -------
-    hom_density : float
-        Homomorphism density approximation
+    hom_density : torch.Tensor
+        Homomorphism density approximation in the format of a PyTorch Tensor witha scalar
     """
     torch.set_grad_enabled(track_computation)
 
     # Unpack graph structure
-    V, E = g
+    V, E = F
 
     # Scale number of samples from graphon to not bias the gradients with high number of edges
     n = int(math.ceil(n/len(E)))
