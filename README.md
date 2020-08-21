@@ -24,7 +24,7 @@ poetry install
 in the cloned repository folder. The dependencies/required packages are listed in the `pyproject.toml` file.
 
 ### Package structure
-To get to know the in's and out's of the package it is best to play with the notebooks located in the `experiments/` directory. Here is a brief overview of the package, subpackage, and modules structure:
+To get to know the in's and out's of the package it is best to play with the notebooks located in the `experiment_notebooks/` directory. Here is a brief overview of the package, subpackage, and modules structure:
 
 * `nngraphons/architectures/` contains `.py` scripts with classes that implement different neural network architectures using PyTorch,
 * `nngraphons/data_manipulation/` contains various scripts that manipulate graph data,
